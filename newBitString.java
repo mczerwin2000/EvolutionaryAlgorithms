@@ -7,6 +7,7 @@ public class newBitString implements Comparable<newBitString>{
 	private final int size;
 	private final ArrayList<Integer> patch;
 	private final int evaluation;
+	private boolean whichRate;
 	public boolean[] data = null;
 	
 	public newBitString(int n, Random random) {
@@ -39,11 +40,20 @@ public class newBitString implements Comparable<newBitString>{
 		this.evaluation = tmpEvaluation;
 	}
 	
+	public newBitString(int n, ArrayList<Integer> patcha,newBitString parent, boolean whichRate) {
+		this(n,patcha,parent);
+		this.whichRate = whichRate;
+	}
+	
 	public void applyPatch(boolean[] parent) {
 		this.data = parent.clone();
 		for(int el: this.patch) {
 			data[el] ^= true;
 		}
+	}
+	
+	public boolean getRate() {
+		return this.whichRate;
 	}
 	
 	public boolean[] getData() {

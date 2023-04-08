@@ -3,20 +3,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-public class QMPStatic {
+public class QMPABrule {
 	
 	private final int size;				//n
 	private final int sizeOffspring;	//lambda
 	private final int sizeParent;		//Mju
-	private final float rate; 			//mutation rate
+	private float rate; 			//mutation rate
 	private ArrayList<newBitString> parent;
 	private Random random;
+	private final float A = 2f;
+	private final float B = 0.5f;
+	private final float threshold = 0.05f;
+	private final float upperBound = 0.5f;
+	private final float lowerBound;
 	
-	public QMPStatic(int n, int lambda,int mju, float rateInput) {
+	public QMPABrule(int n, int lambda,int mju) {
 		this.size = n;
 		this.sizeOffspring = lambda;
 		this.sizeParent = mju;
-		this.rate = rateInput;
+		float tmpSize = n;
+		this.rate = 1/tmpSize;
+		this.lowerBound = 1/tmpSize;
 		this.random = new Random();
 		this.parent = new ArrayList<newBitString>();
 		for(int i = 0;i<mju;i++) {
@@ -105,12 +112,16 @@ public class QMPStatic {
 		while(this.parent.get(parent.size() - 1).getEvaluation() != this.size) {
 			generation++;
 			ArrayList<newBitString> offspring = new ArrayList<newBitString>();
+			float pass = 0f;
 			for(int i = 0;i<this.sizeOffspring;i++) {
 				int idParent = i % this.sizeParent;
 				newBitString candidate = new newBitString(this.size,generatePatch(),this.parent.get(idParent));
-				if(candidate.getEvaluation() >= this.parent.get(idParent).getEvaluation()) {
+				if(candidate.getEvaluation() >= this.parent.get(0).getEvaluation()) {
 					candidate.applyPatch(this.parent.get(idParent).getData());
 					offspring.add(candidate);
+				}
+				if(candidate.getEvaluation() >= this.parent.get(idParent).getEvaluation()) {
+					pass++;
 				}
 			}
 			for(newBitString el: offspring) {
@@ -123,6 +134,12 @@ public class QMPStatic {
 //				System.out.println("EV: " + this.parent.get(this.sizeParent - 1).getEvaluation());
 //			}
 			//break;
+			if(pass/(float)this.sizeOffspring >= this.threshold) {
+				this.rate = Math.min(this.upperBound, this.rate*this.A);
+			}
+			else {
+				this.rate = Math.max(this.lowerBound, this.rate*this.B);
+			}
 		}
 		//System.out.println("Solution in generation: " + generation);
 		return generation;
