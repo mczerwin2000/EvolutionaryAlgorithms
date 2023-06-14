@@ -22,7 +22,8 @@ public class QMP2rate {
 		this.sizeParent = mju;
 		float tmpSize = n;
 		this.rate = 2/tmpSize;
-		this.lowerBound = 2/tmpSize;
+		//this.lowerBound = 2/tmpSize;
+		this.lowerBound = 2/(tmpSize*tmpSize);
 		this.random = new Random();
 		this.parent = new ArrayList<newBitString>();
 		for(int i = 0;i<mju;i++) {
@@ -50,7 +51,8 @@ public class QMP2rate {
 				r = random.nextFloat();
 			}
 			while(r == 0); //Logarithm value must be greater than 0
-			int mutation = (int)(Math.log(r)/Math.log(1-rate));
+			double forLog = 1d-(double)rate;
+			int mutation = (int)(Math.log(r)/Math.log(forLog));
 			i += 1 + mutation;
 			if(i >= this.size) {break;}
 			check = false;
@@ -112,6 +114,7 @@ public class QMP2rate {
 		for(int i = 0;i < this.sizeParent;i++) {
 			if(idOffspring < this.offspringForParent * (i+1)) {
 				parentID = i;
+				break;
 			}
 		}
 		return parentID;
@@ -119,6 +122,8 @@ public class QMP2rate {
 	
 	public int start() {
 		int generation = 0;
+		int mutationChange = this.offspringForParent/2;
+		if(mutationChange == 0) mutationChange++;
 		while(this.parent.get(parent.size() - 1).getEvaluation() != this.size) {
 			generation++;
 			ArrayList<newBitString> offspring = new ArrayList<newBitString>();
@@ -126,10 +131,13 @@ public class QMP2rate {
 			int bestChildEvaluation = 0;
 			boolean rateType = false;
 			for(int i = 0;i<this.sizeOffspring;i++) {
-				if(i % this.sizeParent == 0)
+				if(i % mutationChange == 0)
 					rateType ^= true;
 				float tmpRate = rateType == true ? this.rate/2 : this.rate*2; 
 				int idParent = returnParent(i);
+//				System.out.println("Generation: " + generation);
+//				System.out.println("WhichParent: " + idParent);
+//				System.out.println("RateType: " + rateType);
 				newBitString candidate = new newBitString(this.size,generatePatch(tmpRate),this.parent.get(idParent),rateType);
 				if(candidate.getEvaluation() >= this.parent.get(0).getEvaluation()) {
 					candidate.applyPatch(this.parent.get(idParent).getData());
@@ -163,7 +171,7 @@ public class QMP2rate {
 //				System.out.println("EV: " + this.parent.get(this.sizeParent - 1).getEvaluation());
 //				System.out.println("MR: " + this.rate);
 //			}
-//			if(generation % 50 == 0) {
+//			if(generation % 1 == 0) {
 //				break;
 //				//System.out.println("EV: " + this.parent.get(this.sizeParent - 1).getEvaluation());
 //			}
